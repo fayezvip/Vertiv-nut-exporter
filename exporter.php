@@ -210,17 +210,20 @@ function get_metrics(array $config): array {
                 $filtered = get_filtered_vars($vars, $filters);
                 log_error("Got filters");
 
+                $renameMap = $config['rename_vars'] ?? [];
+
+
                 foreach ($filtered as $var => $val) {
-                    $labels = format_labels($upsname, $host, $customLabels);
-                    if(is_numeric($val)) {
-                        $metric = format_prometheus_name($var);
-                        $metrics[$metric][] = [
-                        'value' => $val,
-                        'labels' => $labels,
-                        'help' => ucfirst(str_replace('.', ' ', $var)),
-                    ];
+                        $labels = format_labels($upsname, $host, $customLabels);
+                        $renamed = rename_var($var, $renameMap);
+                        $metric = format_prometheus_name($renamed);
+                        if(is_numeric($val)) {
+                            $metrics[$metric][] = [
+                                'value' => $val,
+                                'labels' => $labels,
+                                'help' => ucfirst(str_replace('.', ' ', $var)),
+                        ];
                 } else {
-                    $metric = format_prometheus_name($var);
                     $metrics[$metric][] = [
                         'value'=> 1,
                         'labels' => array_merge($labels, [
@@ -245,6 +248,17 @@ function get_metrics(array $config): array {
 }
 
 /**
+ * Rename a NUT variable using config mapping if applicable.
+ *
+ * @param string $original Original variable name (e.g. "ups.status")
+ * @param array $renameMap Map of old => new variable names
+ * @return string Final metric name
+ */
+function rename_var(string $original, array $renameMap): string {
+    return $renameMap[$original] ?? $original;
+}
+
+/**
  * Format metrics into Prometheus exposition text format.
  *
  * @param array $metrics Collected metric data
@@ -262,14 +276,9 @@ function generate_output(array $metrics): string {
                 array_keys($entry['labels']),
                 $entry['labels']
             ));
-            // $output .= "$name{$labels} {$entry['value']}\n";
-            if($name == "nut_ups_status"){
-                $output .= "nut_ups_status{ups=\"ups-2k\",server=\"192.168.1.111\",location=\"Comms-Room\",key=\"ups.status\",value=\"OB\"} 0\n";
-
-            }
-            else{
+        
             $output .= "$name" . ($labels ? "{" . $labels . "}" : "") . " {$entry['value']}\n";
-            }
+            
 
         }
     }

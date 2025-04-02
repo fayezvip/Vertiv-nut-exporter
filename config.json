@@ -17,6 +17,9 @@
 			]
 		}
 	],
+	"rename_vars": {
+		"ups.temperature": "battery.temperature"
+	},
 	"cache_ttl": 15,
 	"metrics_path": "/metrics"
 }
