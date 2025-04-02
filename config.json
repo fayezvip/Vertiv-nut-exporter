@@ -4,7 +4,7 @@
 			"host": "192.168.1.111",
 			"port": 3493,
 			"username": "upsmon",
-			"password": "bmw745",
+			"password": "pass",
 			"upses": [
 				{
 					"name": "ups-2k",
