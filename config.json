@@ -1,0 +1,22 @@
+{
+	"servers": [
+		{
+			"host": "192.168.1.111",
+			"port": 3493,
+			"username": "upsmon",
+			"password": "bmw745",
+			"upses": [
+				{
+					"name": "ups-2k",
+					"labels": { "location": "Comms-Room" }
+				},
+				{
+					"name": "ups-6k",
+					"labels": { "location": "2nd-Floor" }
+				}
+			]
+		}
+	],
+	"cache_ttl": 15,
+	"metrics_path": "/metrics"
+}
