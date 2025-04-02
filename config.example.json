@@ -1,0 +1,22 @@
+{
+	"servers": [
+		{
+			"host": "127.0.0.1",
+			"port": 3493,
+			"username": "upsmon",
+			"password": "your-password",
+			"upses": [
+				{
+					"name": "ups-1",
+					"labels": {
+						"location": "Server Room"
+					}
+				}
+			]
+		}
+	],
+	"cache_ttl": 15,
+	"metrics_path": "/metrics",
+	"filter_metrics": [],
+	"rename_vars": {}
+}
