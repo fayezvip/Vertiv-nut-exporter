@@ -2,10 +2,6 @@
 
 A lightweight, dependency-free Prometheus exporter written in pure PHP for [Network UPS Tools (NUT)](https://networkupstools.org/). It supports multiple NUT servers and UPS devices, optional authentication, metric filtering, and full Prometheus integration. designed for simplicity, efficiency, and portability.
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
 ---
 
 ## 🔌 Features
@@ -19,7 +15,6 @@ A lightweight, dependency-free Prometheus exporter written in pure PHP for [Netw
 - 🐳 Fully containerized with CI/CD via GitHub Actions + Docker Hub
 
 ---
-<<<<<<< HEAD
 
 ## 📦 Example `config.json`
 
@@ -50,37 +45,37 @@ A lightweight, dependency-free Prometheus exporter written in pure PHP for [Netw
 		"battery.runtime": "battery_runtime_seconds"
 	}
 }
-=======
+```
+
 ## 📦 Example `config.json`
+
 ```json
 {
-  "servers": [
-    {
-      "host": "192.168.1.10",
-      "port": 3493,
-      "username": "upsmon",
-      "password": "password",
-      "upses": [
-        {
-          "name": "ups-1",
-          "labels": { "location": "Comms-Room" }
-        },
-        {
-          "name": "ups-2",
-          "labels": { "location": "Servers-Room" }
-        }
-      ]
-    }
-  ],
-  "cache_ttl": 15,
-  "metrics_path": "/metrics",
-  "rename_vars": {
-    "ups.status": "ups_state",
-    "battery.runtime": "battery_runtime_seconds"
-  }
+	"servers": [
+		{
+			"host": "192.168.1.10",
+			"port": 3493,
+			"username": "upsmon",
+			"password": "password",
+			"upses": [
+				{
+					"name": "ups-1",
+					"labels": { "location": "Comms-Room" }
+				},
+				{
+					"name": "ups-2",
+					"labels": { "location": "Servers-Room" }
+				}
+			]
+		}
+	],
+	"cache_ttl": 15,
+	"metrics_path": "/metrics",
+	"rename_vars": {
+		"ups.status": "ups_state",
+		"battery.runtime": "battery_runtime_seconds"
+	}
 }
-
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
 ```
 
 ### 🐳 Docker Usage
@@ -111,25 +106,15 @@ services:
 ```
 
 ### 📈 Prometheus Scrape Config
-<<<<<<< HEAD
 
-=======
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
 ```yaml
 - job_name: 'vertiv-nut-exporter'
   static_configs:
     - targets: ['<exporter-host>:9000']
-<<<<<<< HEAD
 ```
 
 ## 📊 Grafana Integration
 
-=======
-
-```
-
-## 📊 Grafana Integration
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
 Use the /metrics endpoint as a Prometheus datasource and build dashboards for:
 
 - UPS status
@@ -145,10 +130,7 @@ Use the /metrics endpoint as a Prometheus datasource and build dashboards for:
 🧙‍♂️ Value mappings like "OL" → "Online" supported via Grafana overrides
 
 ## 📝 Configuration
-<<<<<<< HEAD
 
-=======
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
 Edit config.json to define your NUT server(s), UPS names, and optional labels.
 
 ```bash
@@ -170,16 +152,10 @@ Edit config.json to define your NUT server(s), UPS names, and optional labels.
   "cache_ttl": 15,
   "metrics_path": "/metrics"
 }
-
-
 ```
-<<<<<<< HEAD
 
 ## 🔐 Security Notes
 
-=======
-## 🔐 Security Notes
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
 This image is based on php:<tag> and may include inherited Debian packages. All CVEs are:
 
 - Logged by Docker Hub’s vulnerability scanner
@@ -189,20 +165,9 @@ This image is based on php:<tag> and may include inherited Debian packages. All 
 SBOM and provenance are generated automatically via GitHub Actions.
 
 ## 📄 License
-<<<<<<< HEAD
 
 This project is licensed under the <a href="LICENSE">MIT License</a>.
 
 ## Author
 
 Built with ❤️ by <a href="https://github.com/fayezvip">@fayezvip</a>
-=======
-This project is licensed under the <a href="LICENSE">MIT License</a>.
-
-
-## Author
-
-Built with ❤️ by <a href="https://github.com/fayezvip">@fayezvip</a>
-
-
->>>>>>> 1d1803351bedd2c7d714de2dd7eca97e40b004ec
