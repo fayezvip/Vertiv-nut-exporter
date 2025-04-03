@@ -22,7 +22,7 @@ A lightweight, dependency-free Prometheus exporter written in pure PHP for [Netw
 {
 	"servers": [
 		{
-			"host": "192.168.1.10",
+			"host": "127.0.0.1",
 			"port": 3493,
 			"username": "upsmon",
 			"password": "password",
@@ -53,7 +53,7 @@ A lightweight, dependency-free Prometheus exporter written in pure PHP for [Netw
 {
 	"servers": [
 		{
-			"host": "192.168.1.10",
+			"host": "127.0.0.1",
 			"port": 3493,
 			"username": "upsmon",
 			"password": "password",
