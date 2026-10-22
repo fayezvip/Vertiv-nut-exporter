@@ -26,7 +26,23 @@ define('LOG_FILE', __DIR__ . '/logs/exporter.log');
  * @param string $message The message to log
  */
 function log_error(string $message): void {
+    // Neutralize control chars and PHP open tags so untrusted data can't forge log lines or plant code
+    $message = preg_replace('/[\x00-\x1F\x7F]/', ' ', $message);
+    $message = str_replace(['<?', '?>'], ['&lt;?', '?&gt;'], $message);
     error_log("[" . date("Y-m-d H:i:s") . "] $message\n", 3, LOG_FILE);
+}
+
+/**
+ * Reject values that could inject extra commands into the NUT line protocol.
+ *
+ * @param string $value Value sent to the NUT server
+ * @param string $field Field name for the error message
+ * @throws Exception If the value contains whitespace or control characters
+ */
+function assert_nut_token(string $value, string $field): void {
+    if ($value === '' || preg_match('/[\s\x00-\x1F\x7F"]/', $value)) {
+        throw new Exception("Invalid $field: must be non-empty without whitespace, quotes or control characters.");
+    }
 }
 
 /**
@@ -78,6 +94,8 @@ function connect_to_nut(string $host, int $port, ?string $username = null, ?stri
 
     // Perform authentication if username and password are provided
     if ($username && $password) {
+        assert_nut_token($username, 'username');
+        assert_nut_token($password, 'password');
         fwrite($fp, "USERNAME $username\n");
         $resp = trim(fgets($fp));
         if (str_starts_with($resp, "ERR")) {
@@ -103,19 +121,19 @@ function connect_to_nut(string $host, int $port, ?string $username = null, ?stri
  * @throws Exception If UPS is not found
  */
 function get_all_vars($fp, string $upsname): array {
+    if (!preg_match('/^[A-Za-z0-9_.@-]+$/', $upsname)) {
+        throw new Exception("Invalid UPS name.");
+    }
     fwrite($fp, "LIST VAR $upsname\n");
     $vars = [];
-    log_error($upsname . "var linees: ");
     while (($line = fgets($fp)) !== false) {
-        $line = trim($line);    
-        log_error($line);
+        $line = trim($line);
         if (str_starts_with($line, "ERR UNKNOWN-UPS")) {
             throw new Exception("UPS '$upsname' not found.");
         }
         if ($line === "END LIST VAR") break;
 
         if (preg_match('/^VAR ' . preg_quote($upsname, '/') . ' (\S+) "(.*?)"$/', $line, $matches)) {
-            log_error("MATCHED: " . $matches[1] . " => " . $matches[2]);
             $vars[$matches[1]] = $matches[2];
         }
 
@@ -144,7 +162,28 @@ function get_filtered_vars(array $vars, array $filters = []): array {
  * @return string Prometheus metric name
  */
 function format_prometheus_name(string $name): string {
-    return "nut_" . str_replace(['.', '-'], '_', strtolower($name));
+    return "nut_" . preg_replace('/[^a-z0-9_]/', '_', strtolower($name));
+}
+
+/**
+ * Escape a label value per the Prometheus exposition format.
+ *
+ * @param string $value Raw label value
+ * @return string Escaped label value
+ */
+function escape_label_value(string $value): string {
+    return str_replace(["\\", "\"", "\n"], ["\\\\", "\\\"", "\\n"], $value);
+}
+
+/**
+ * Convert a label name to a Prometheus-safe label name.
+ *
+ * @param string $name Raw label name
+ * @return string Sanitized label name
+ */
+function format_label_name(string $name): string {
+    $name = preg_replace('/[^a-zA-Z0-9_]/', '_', $name);
+    return preg_match('/^[a-zA-Z_]/', $name) ? $name : "_$name";
 }
 
 /**
@@ -219,7 +258,7 @@ function get_metrics(array $config): array {
                         $metric = format_prometheus_name($renamed);
                         if(is_numeric($val)) {
                             $metrics[$metric][] = [
-                                'value' => $val,
+                                'value' => trim($val),
                                 'labels' => $labels,
                                 'help' => ucfirst(str_replace('.', ' ', $var)),
                         ];
@@ -272,7 +311,7 @@ function generate_output(array $metrics): string {
         // $output .= "# TYPE $name gauge\n";
         foreach ($entries as $entry) {
             $labels = implode(',', array_map(
-                fn($k, $v) => "$k=\"$v\"",
+                fn($k, $v) => format_label_name((string)$k) . '="' . escape_label_value((string)$v) . '"',
                 array_keys($entry['labels']),
                 $entry['labels']
             ));
@@ -305,7 +344,11 @@ function serve_metrics(array $config): void {
         log_error("Generating outputs ======");
         $output = generate_output($metrics);
         log_error("Saving to cache =========");
-        file_put_contents(CACHE_FILE, $output);
+        // Write atomically so concurrent requests never serve a partial cache
+        $tmp = CACHE_FILE . '.' . getmypid() . '.tmp';
+        if (file_put_contents($tmp, $output, LOCK_EX) !== false) {
+            rename($tmp, CACHE_FILE);
+        }
         log_error("Printing output =========");
         echo $output;
     } catch (Throwable $e) {
@@ -326,7 +369,7 @@ function handle_request(array $config): void {
 
     if (parse_url($path, PHP_URL_PATH) !== $expected) {
         http_response_code(404);
-        log_error("Fatal error: not correct path it should be: " . $config['metrics_path'] ?? '/metrics');
+        log_error("Fatal error: not correct path it should be: " . $expected);
 
         exit("404 Not Found");
     }

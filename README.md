@@ -4,6 +4,16 @@ A lightweight, dependency-free Prometheus exporter written in pure PHP for [Netw
 
 ---
 
+## 🔒 Security notice: PHP2Shell (CVE-2026-109618, CVE-2026-109619)
+
+Images before `v1.0.2` ship PHP 8.4.5, which is vulnerable to unauthenticated remote code execution. Update now:
+
+```bash
+docker compose pull && docker compose up -d
+```
+
+---
+
 ## 🔌 Features
 
 - 🚀 Connects to multiple NUT servers over TCP
