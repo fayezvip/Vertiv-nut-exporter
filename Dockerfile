@@ -1,5 +1,5 @@
 # PHP >= 8.4.27 required: fixes PHP2Shell (CVE-2026-109618, CVE-2026-109619)
-FROM php:8.4.27-cli-bookworm
+FROM php:8.5.0-cli-bookworm
 
 RUN apt-get update && apt-get install -y --no-install-recommends curl \
   && rm -rf /var/lib/apt/lists/*
